@@ -1,0 +1,31 @@
+name: Gerar Meu APK
+on:
+  push:
+    branches: [ main ]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+      - name: Instalar e Buildar
+        run: |
+          npm install
+          npm run build
+      - name: Criar Projeto Android
+        run: |
+          npm install @capacitor/cli @capacitor/core @capacitor/android
+          npx cap init "Treinador" "com.treino.inteligente" --web-dir dist
+          npx cap add android
+          npx cap copy android
+      - name: Fabricar APK
+        run: |
+          cd android
+          ./gradlew assembleDebug
+      - name: Baixar Arquivo Pronto
+        uses: actions/upload-artifact@v3
+        with:
+          name: App-Treinador-APK
+          path: android/app/build/outputs/apk/debug/app-debug.apk
