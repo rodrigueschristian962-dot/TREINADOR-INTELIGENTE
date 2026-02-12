@@ -7,7 +7,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Set up Java 17
+      - name: Configurar Java 17
         uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
@@ -15,26 +15,29 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 18
-      - name: Instalar e Gerar Web
+      - name: Limpeza e Build Web
         run: |
           npm install --legacy-peer-deps
           npm run build
           mkdir -p dist
-      - name: Reset Total Capacitor
+      - name: Forçar Capacitor Novo
         run: |
           npm install @capacitor/cli @capacitor/core @capacitor/android
           rm -rf android
-          npx cap init "TreinadorV5" "com.treino.v5" --web-dir dist || true
+          # Mudamos o ID para v6 para garantir que o GitHub não use lixo anterior
+          npx cap init "TreinadorV6" "com.treino.v6" --web-dir dist || true
           npx cap add android
           npx cap copy android
-      - name: Forçar Versão Limpa do Gradle
+      - name: Fabricar APK com Limpeza de Cache
         run: |
           cd android
-          # Este comando muda a versão do motor para evitar o arquivo corrompido
-          sed -i 's/gradle-8.2.1-all.zip/gradle-8.0-bin.zip/g' gradle/wrapper/gradle-wrapper.properties
+          # Limpando o cache local do runner antes de começar
+          ./gradlew clean
+          rm -rf ~/.gradle/caches/
           chmod +x gradlew
+          # Rodando sem usar cache nenhum (--no-build-cache)
           ./gradlew assembleDebug --no-daemon --no-build-cache
-      - name: Baixar App Pronto
+      - name: Link de Download
         uses: actions/upload-artifact@v4
         with:
           name: App-Treinador-APK
