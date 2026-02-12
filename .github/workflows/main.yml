@@ -15,25 +15,26 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 18
-      - name: Preparar Web
+      - name: Instalar e Gerar Web
         run: |
           npm install --legacy-peer-deps
           npm run build
           mkdir -p dist
-      - name: Resetar Capacitor
+      - name: Reset Total Capacitor
         run: |
           npm install @capacitor/cli @capacitor/core @capacitor/android
           rm -rf android
-          npx cap init "TreinadorV3" "com.treino.v3" --web-dir dist || true
+          npx cap init "TreinadorV5" "com.treino.v5" --web-dir dist || true
           npx cap add android
           npx cap copy android
-      - name: Fabricar APK Final
+      - name: Forçar Versão Limpa do Gradle
         run: |
           cd android
+          # Este comando muda a versão do motor para evitar o arquivo corrompido
+          sed -i 's/gradle-8.2.1-all.zip/gradle-8.0-bin.zip/g' gradle/wrapper/gradle-wrapper.properties
           chmod +x gradlew
-          # Usando flags para ignorar erros de cache corrompido
           ./gradlew assembleDebug --no-daemon --no-build-cache
-      - name: Link para Download
+      - name: Baixar App Pronto
         uses: actions/upload-artifact@v4
         with:
           name: App-Treinador-APK
