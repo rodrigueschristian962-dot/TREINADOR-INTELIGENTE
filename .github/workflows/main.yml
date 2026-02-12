@@ -1,4 +1,4 @@
-name: Gerar Meu APK
+name: Gerar APK Simples
 on:
   push:
     branches: [ main ]
@@ -7,38 +7,23 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Configurar Java 17
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'zulu'
-          java-version: '17'
-      - uses: actions/setup-node@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
         with:
           node-version: 18
-      - name: Limpeza e Build Web
+      - name: Instalar e Build
         run: |
           npm install --legacy-peer-deps
           npm run build
           mkdir -p dist
-      - name: Forçar Capacitor Novo
+      - name: Capacitor
         run: |
-          npm install @capacitor/cli @capacitor/core @capacitor/android
-          rm -rf android
-          # Mudamos o ID para v6 para garantir que o GitHub não use lixo anterior
-          npx cap init "TreinadorV6" "com.treino.v6" --web-dir dist || true
-          npx cap add android
+          npm install @capacitor/cli @capacitor/android
+          npx cap init "App" "com.app.simples" --web-dir dist || true
+          npx cap add android || true
           npx cap copy android
-      - name: Fabricar APK com Limpeza de Cache
-        run: |
-          cd android
-          # Limpando o cache local do runner antes de começar
-          ./gradlew clean
-          rm -rf ~/.gradle/caches/
-          chmod +x gradlew
-          # Rodando sem usar cache nenhum (--no-build-cache)
-          ./gradlew assembleDebug --no-daemon --no-build-cache
-      - name: Link de Download
+      - name: Upload da Pasta para Mim
         uses: actions/upload-artifact@v4
         with:
-          name: App-Treinador-APK
-          path: android/app/build/outputs/apk/debug/app-debug.apk
+          name: Projeto-Pronto-Para-Abrir
+          path: android/
