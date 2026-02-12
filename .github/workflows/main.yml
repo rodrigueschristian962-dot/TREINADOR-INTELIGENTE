@@ -10,21 +10,25 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 18
-      - name: Instalar Dependencias
-        run: npm install --legacy-peer-deps
-      - name: Build do Projeto
-        run: npm run build
+      - name: Instalar e Gerar Web
+        run: |
+          npm install --legacy-peer-deps
+          npm run build
+          mkdir -p dist
       - name: Configurar Capacitor
         run: |
           npm install @capacitor/cli @capacitor/core @capacitor/android
           npx cap init "Treinador" "com.treino.inteligente" --web-dir dist || true
           npx cap add android || true
           npx cap copy android
-      - name: Fabricar APK Final
+      - name: Limpar e Fabricar APK
         run: |
           cd android
-          ./gradlew assembleDebug
-      - name: Disponibilizar Download
+          # Este comando abaixo resolve o erro da imagem anterior
+          rm -rf ~/.gradle/caches/
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon
+      - name: Baixar App Pronto
         uses: actions/upload-artifact@v4
         with:
           name: App-Treinador-APK
